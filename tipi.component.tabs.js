@@ -13,7 +13,7 @@ function setTabs() {
 		itemReady : '__tabs-item--ready',
 		itemActive : '__tabs-item--active',
 		toggleReady : '__tabs-toggle--ready',
-		toggleActive : '__tabs-toggle--ready',
+		toggleActive : '__tabs-toggle--active',
 	}
 
 	var tabsDataAttributes = {
