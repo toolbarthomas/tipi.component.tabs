@@ -1,0 +1,11 @@
+@mixin core_tabs {
+	.tabs-item {
+		&.__tabs-item--ready {
+			display: none;
+
+			&.__tabs-item--active {
+				display: block;
+			}
+		}
+	}
+}

@@ -1,0 +1,16 @@
+{
+  "name": "tipi.component.tabs",
+  "homepage": "https://github.com/toolbarthomas/tipi.component.tabs",
+  "authors": [
+    "Thomas van der Velde <contact@toolbarthomas.net>"
+  ],
+  "description": "Tabs component for Tipi ",
+  "keywords": [
+    "toolbarthomas",
+    "modular",
+    "tipi",
+    "tabs"
+  ],
+  "license": "MIT",
+  "main": "tipi.component.tabs.js"
+}
