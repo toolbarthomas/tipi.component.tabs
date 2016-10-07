@@ -31,10 +31,10 @@ function setTabs() {
 		tabs.each(function() {
 			var tabsEach = $(this);
 
-			var tabsToggles = getTabsElement(tabsEach, 'toggles', tabsElements, tabsStates);
-			var tabsToggle = getTabsElement(tabsEach, 'toggle', tabsElements, tabsStates);
-			var tabsItems = getTabsElement(tabsEach, 'items', tabsElements, tabsStates);
-			var tabsItem = getTabsElement(tabsEach, 'item', tabsElements, tabsStates);
+			var tabsToggles = getTabsElement(tabsEach, 'toggles', tabsElements);
+			var tabsToggle = getTabsElement(tabsEach, 'toggle', tabsElements);
+			var tabsItems = getTabsElement(tabsEach, 'items', tabsElements);
+			var tabsItem = getTabsElement(tabsEach, 'item', tabsElements);
 
 			if(tabsToggle.length > 0 && tabsItem.length > 0) {
 				tabsEach.on({
@@ -75,7 +75,7 @@ function setTabs() {
 
 						var toggle = $(this);
 						var index = toggle.data(tabsDataAttributes.toggleIndex);
-						var tabs = getTabsElement(toggle, 'root', tabsElements, tabsStates);
+						var tabs = getTabsElement(toggle, 'root', tabsElements);
 
 						if(typeof tabs != 'undefined' && typeof index != 'undefined') {
 							if (tabs.length > 0) {
@@ -92,10 +92,10 @@ function setTabs() {
 }
 
 function switchTabsItem(tabs, tabsElements, tabsStates, index) {
-	var tabsToggles = getTabsElement(tabs, 'toggles', tabsElements, tabsStates);
-	var tabsToggle = getTabsElement(tabs, 'toggle', tabsElements, tabsStates);
-	var tabsItems = getTabsElement(tabs, 'items', tabsElements, tabsStates);
-	var tabsItem = getTabsElement(tabs, 'item', tabsElements, tabsStates);
+	var tabsToggles = getTabsElement(tabs, 'toggles', tabsElements);
+	var tabsToggle = getTabsElement(tabs, 'toggle', tabsElements);
+	var tabsItems = getTabsElement(tabs, 'items', tabsElements);
+	var tabsItem = getTabsElement(tabs, 'item', tabsElements);
 
 	if(typeof tabsToggle != 'undefined' && typeof tabsItem != 'undefined') {
 		if(tabsToggle.length > 0 && tabsItem.length > 0) {
@@ -105,7 +105,7 @@ function switchTabsItem(tabs, tabsElements, tabsStates, index) {
 	}
 }
 
-function getTabsElement(origin, type, tabsElements, tabsStates) {
+function getTabsElement(origin, type, tabsElements) {
 	if(typeof origin != 'undefined' && typeof type != 'undefined') {
 		var element;
 
