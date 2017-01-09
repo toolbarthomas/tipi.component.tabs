@@ -1,133 +1,187 @@
-function setTabs() {
-	var tabsElements = {
-		root : 'tabs',
-		toggles : 'tabs-toggles',
-		toggle : 'tabs-toggle',
-		items : 'tabs-items',
-		item : 'tabs-item'
-	}
+(function(win, doc, $) {
+	window.setTabs = function()
+	{
+		var data = {
+			elements : {
+				root : 'tabs',
+				toggles : 'tabs-toggles',
+				toggle : 'tabs-toggle',
+				items : 'tabs-items',
+				item : 'tabs-item'
+			},
+			states : {
+				ready : '__tabs--ready',
+				item_ready : '__tabs-item--ready',
+				item_active : '__tabs-item--active',
+				toggle_active : '__tabs-toggle--active'
+			},
+			attributes : {
+				start_at : 'tabs-start-at',
+				toggle_index : 'tabs-toggle-index'
+			}
+		}
 
-	var tabsStates = {
-		ready : '__tabs--ready',
-		itemsReady : '__tabs-items--ready',
-		itemReady : '__tabs-item--ready',
-		itemActive : '__tabs-item--active',
-		toggleReady : '__tabs-toggle--ready',
-		toggleActive : '__tabs-toggle--active',
-	}
+		var tabs = $('.' + data.elements.root).not('.' + data.states.ready);
 
-	var tabsDataAttributes = {
-		startingIndex : 'tabs-starting-index',
-		itemIndex : 'tabs-item-index',
-		toggleIndex : 'tabs-toggle-index',
-		toggleDestination : 'tabs-toggle-destination'
-	}
+		if(tabs.length === 0)
+		{
+			return;
+		}
 
-	var tabs = $('.' + tabsElements.root).not('.' + tabsStates.ready);
-
-	if(tabs.length > 0) {
-		var hash = window.location.hash;
-
-		tabs.each(function() {
-			var tabsEach = $(this);
-
-			var tabsToggles = getTabsElement(tabsEach, 'toggles', tabsElements);
-			var tabsToggle = getTabsElement(tabsEach, 'toggle', tabsElements);
-			var tabsItems = getTabsElement(tabsEach, 'items', tabsElements);
-			var tabsItem = getTabsElement(tabsEach, 'item', tabsElements);
-
-			if(tabsToggle.length > 0 && tabsItem.length > 0) {
-				tabsEach.on({
-					'tipi.tabs.switch' : function(event, tabs, index) {
-						switchTabsItem(tabs, tabsElements, tabsStates, index)
-					}
-				});
-
-				tabsEach.addClass(tabsStates.ready);
-				tabsToggle.addClass(tabsStates.toggleReady);
-				tabsItems.addClass(tabsStates.itemsReady);
-				tabsItem.addClass(tabsStates.itemReady);
-
-				var startingIndex = tabsEach.data(tabsDataAttributes.startingIndex);
-				if(typeof startingIndex == 'undefined') {
-					startingIndex = 0;
-				} else if(isNaN(startingIndex)) {
-					startingIndex = 0;
-				}
-
-				//Overrule the startingIndex if we have a hash after the page load
-				if(typeof hash != 'undefined') {
-					var hashElement = tabsItem.filter(hash);
-
-					if(hashElement.length > 0 ) {
-						startingIndex = hashElement.index();
-					}
-				}
-
-				//Loop through all toggles and an index to it so we can select the correct item
-				tabsToggle.each(function(index) {
-					$(this).data(tabsDataAttributes.toggleIndex, index);
-				});
-
-				tabsToggle.on({
-					click : function(event) {
-						event.preventDefault();
-
-						var toggle = $(this);
-						var index = toggle.data(tabsDataAttributes.toggleIndex);
-						var tabs = getTabsElement(toggle, 'root', tabsElements);
-
-						if(typeof tabs != 'undefined' && typeof index != 'undefined') {
-							if (tabs.length > 0) {
-								tabs.trigger('tipi.tabs.switch', [tabs, index]);
-							}
-						}
-					}
-				});
-
-				tabsEach.trigger('tipi.tabs.switch', [tabsEach, startingIndex, true]);
+		doc.on({
+			'tipi.tabs.toggle' : function(event, tabs, index, options) {
+				toggleTabsToggle(tabs, index, data, options);
+				toggleTabsItem(tabs, index, data, options);
 			}
 		});
+
+		tabs.each(function() {
+			var tabs = $(this);
+			var toggles = getTabsElement(tabs, 'toggles', data);
+			var toggle = getTabsElement(tabs, 'toggle', data);
+			var items = getTabsElement(tabs, 'items', data);
+			var item = getTabsElement(tabs, 'item', data);
+
+			if(toggle.length === 0 || item.length === 0)
+			{
+				return;
+			}
+
+			//Set the options for each accordion
+			var options = getTabsOptions(tabs, data);
+
+			toggle.each(function(index) {
+				$(this).data(data.attributes.toggle_index, index);
+			});
+
+			toggle.on({
+				click : function(event)
+				{
+					var toggle = $(this);
+					var tabs = getTabsElement(toggle, 'root', data);
+
+					//Don't proceed if the accordion is not ready
+					if(!tabs.hasClass(data.states.ready))
+					{
+						return;
+					}
+
+					event.preventDefault();
+					var index = toggle.data(data.attributes.toggle_index);
+
+					doc.trigger('tipi.tabs.toggle', [tabs, index, options]);
+				}
+			});
+
+			if(options.start_at >= 0) {
+				doc.trigger('tipi.tabs.toggle', [tabs, options.start_at, options]);
+			}
+
+			//Add the ready classes
+			tabs.addClass(data.states.ready);
+			items.addClass(data.states.items_ready);
+			item.addClass(data.states.item_ready);
+		});
 	}
-}
 
-function switchTabsItem(tabs, tabsElements, tabsStates, index) {
-	var tabsToggles = getTabsElement(tabs, 'toggles', tabsElements);
-	var tabsToggle = getTabsElement(tabs, 'toggle', tabsElements);
-	var tabsItems = getTabsElement(tabs, 'items', tabsElements);
-	var tabsItem = getTabsElement(tabs, 'item', tabsElements);
+	function toggleTabsToggle(tabs, index, data, options)
+	{
+		var toggle = getTabsElement(tabs, 'toggle', data);
 
-	if(typeof tabsToggle != 'undefined' && typeof tabsItem != 'undefined') {
-		if(tabsToggle.length > 0 && tabsItem.length > 0) {
-			tabsToggle.removeClass(tabsStates.toggleActive).eq(index).addClass(tabsStates.toggleActive);
-			tabsItem.removeClass(tabsStates.itemActive).eq(index).addClass(tabsStates.itemActive);
+		if(toggle.length === 0)
+		{
+			return;
 		}
-	}
-}
 
-function getTabsElement(origin, type, tabsElements) {
-	if(typeof origin != 'undefined' && typeof type != 'undefined') {
-		var element;
+		toggle.removeClass(data.states.toggle_active).eq(index).addClass(data.states.toggle_active);
+	}
+
+	function toggleTabsItem(tabs, index, data, options)
+	{
+		var item = getTabsElement(tabs, 'item', data);
+
+		if(item.length === 0)
+		{
+			return;
+		}
+
+		item.removeClass(data.states.item_active).eq(index).addClass(data.states.item_active);
+	}
+
+	function getTabsOptions(tabs, data)
+	{
+		var options = {
+			start_at : 0
+		}
+
+		if(typeof tabs.data(data.attributes.start_at) != 'undefined')
+		{
+			var starting_index = tabs.data(data.attributes.start_at);
+
+			if(!isNaN(parseFloat(starting_index)))
+			{
+				options.start_at = starting_index;
+			}
+		}
+
+		return options;
+	}
+
+	function getTabsElement(origin, type, data)
+	{
+		if(typeof origin == 'undefined' || typeof data.elements == 'undefined')
+		{
+			return;
+		}
+
+		var element = $();
 
 		switch(type) {
 			case 'root' :
-				element = origin.parents('.' + tabsElements.root).first();
+				element = origin.parents('.' + data.elements.root).first();
 				break;
 			case 'toggles' :
-				element = origin.find('.' + tabsElements.toggles).first();
+				var toggles = origin.find('.' + data.elements.toggles);
+
+				toggles.each(function() {
+					var tabs = $(this).parents('.' + data.elements.root).first();
+
+					if(!tabs.is(origin))
+					{
+						return;
+					}
+
+					element = element.add($(this));
+				});
+
+				break;
 			case 'toggle' :
-				element = origin.find('.' + tabsElements.toggles).first().find('.' + tabsElements.toggle);
+				var toggle = origin.find('.' + data.elements.toggle);
+
+				toggle.each(function() {
+					var tabs = $(this).parents('.' + data.elements.root).first();
+
+					if(!tabs.is(origin))
+					{
+						return;
+					}
+
+					element = element.add($(this));
+				});
+
 				break;
 			case 'items' :
-				element = origin.find('.' + tabsElements.items).first();
+				element = origin.find('.' + data.elements.items).first();
+
 				break;
 			case 'item' :
-				element = origin.find('.' + tabsElements.items).first().find('.' + tabsElements.item).first().siblings().addBack();
+				element = origin.find('.' + data.elements.item).first().siblings().addBack();
+
 				break;
 			default:
-				return;
 		}
 
 		return element;
 	}
-}
+
+})( window.jQuery(window), window.jQuery(document), window.jQuery);
